@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crackit Bhai - JOA IT Mock Test Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Palette Status Colors */
+        .status-not-visited { background-color: #e5e7eb; color: #374151; } 
+        .status-not-answered { background-color: #ef4444; color: white; } 
+        .status-answered { background-color: #22c55e; color: white; } 
+        .status-marked { background-color: #a855f7; color: white; } 
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Custom Radio Button styling */
+        .option-label {
+            display: flex; align-items: center; padding: 12px 16px;
+            border: 2px solid #e5e7eb; border-radius: 8px;
+            cursor: pointer; transition: all 0.2s; background: white;
+        }
+        .option-label:hover { border-color: #2563eb; background: #eff6ff; }
+        input[type="radio"]:checked + .option-label {
+            border-color: #2563eb; background: #eff6ff;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+        }
+        
+        /* Section Tab Active State */
+        .section-tab {
+            padding: 8px 12px; border-radius: 6px; cursor: pointer;
+            font-weight: 600; font-size: 0.85rem; text-align: center;
+            border: 1px solid #e5e7eb; background: #f9fafb; color: #4b5563;
+            transition: all 0.2s;
+        }
+        .section-tab:hover { background: #e5e7eb; }
+        .section-tab.active {
+            background-color: #2563eb; color: white; border-color: #2563eb;
+        }
+
+        .palette-btn {
+            aspect-ratio: 1 / 1;
+            width: 100%;
+            max-width: 45px;
+            margin: 0 auto;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; cursor: pointer;
+            transition: transform 0.1s;
+            border: 1px solid #d1d5db;
+        }
+        .palette-btn:hover { transform: scale(1.05); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+        /* Prevent PDF page breaks */
+        .question-review-card {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        /* Dashboard Card Hover */
+        .test-card {
+            transition: all 0.3s ease;
+        }
+        .test-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.15);
+            border-color: #93c5fd;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col text-slate-800 text-sm bg-slate-50">
+
+    <!-- 1. LOGIN SCREEN -->
+    <div id="login-screen" class="flex-1 flex items-center justify-center bg-slate-100 p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full text-center border border-slate-200">
+            <div class="bg-blue-600 text-white p-4 rounded-xl mb-6 shadow-md inline-block">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+            </div>
+            <h1 class="text-3xl font-bold text-slate-800 mb-2">Crackit Bhai</h1>
+            <p class="text-slate-500 mb-8">JOA IT Mock Test Platform</p>
+            
+            <div class="text-left mb-6">
+                <label class="block text-sm font-medium text-slate-700 mb-2">Enter Your Full Name</label>
+                <input type="text" id="student-name-input" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition" placeholder="Enter Your name" onkeypress="if(event.key === 'Enter') loginToDashboard()">
+                <p id="name-error" class="text-red-500 text-xs mt-2 hidden">Please enter your name to continue.</p>
+            </div>
+            
+            <button onclick="loginToDashboard()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-lg hover:shadow-blue-500/30">
+                Enter Platform
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. DASHBOARD / HOMEPAGE SCREEN -->
+    <div id="dashboard-screen" class="hidden flex-1 flex flex-col bg-slate-100 overflow-y-auto">
+        <header class="bg-blue-700 text-white px-6 py-4 flex justify-between items-center shadow-md shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="font-bold text-2xl tracking-tight">Crackit Bhai</div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-white text-blue-700 flex items-center justify-center font-bold" id="dashboard-avatar">S</div>
+                <span id="dashboard-student-name" class="font-semibold hidden sm:inline">Student</span>
+            </div>
+        </header>
+
+        <div class="p-6 sm:p-10 max-w-6xl mx-auto w-full">
+            <div class="mb-8">
+                <h2 class="text-3xl font-black text-slate-800">Available Mock Tests</h2>
+                <p class="text-slate-600 mt-2">Select any JOA IT Mock Test from the list below to start your practice.</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="test-cards-container">
+                <!-- Cards injected dynamically by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. INSTRUCTIONS SCREEN -->
+    <div id="instructions-screen" class="hidden flex-1 flex flex-col items-center p-6 overflow-y-auto bg-slate-100">
+        <div class="max-w-3xl w-full bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mt-4">
+            <div class="flex justify-between items-center border-b pb-4 mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">General Instructions</h2>
+                <span id="instruction-test-name" class="px-3 py-1 bg-blue-100 text-blue-800 font-bold rounded-lg text-sm">Mock Test</span>
+            </div>
+            
+            <div class="space-y-4 text-slate-600 text-base">
+                <p><strong>Please read the following instructions carefully before starting the test:</strong></p>
+                <ul class="list-disc pl-5 space-y-3">
+                    <li>The total duration of the examination is <strong>120 Minutes (2 Hours)</strong>.</li>
+                    <li>The clock will be set at the server. The countdown timer in the top right corner will display the remaining time available.</li>
+                    <li>When the timer reaches zero, the examination will end by itself.</li>
+                    <li>This test consists of the following sections: <strong id="instruction-sections-list">Computer Science, General Knowledge, General English, and General Hindi.</strong></li>
+                    <li>There are a total of <strong id="instruction-total-qs">200 Questions</strong>.</li>
+                    <li><strong>Marking Scheme:</strong> You will be awarded <strong class="text-green-600">+0.5 marks</strong> for each correct answer. There is no negative marking mentioned for this specific paper, but we simulate standard <strong class="text-red-500">-0.25 marks</strong> for practice accuracy.</li>
+                </ul>
+
+                <h3 class="font-bold text-slate-800 mt-8 mb-4">Navigating & Answering:</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-2 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <div class="flex items-center gap-3"><div class="w-6 h-6 rounded bg-[#e5e7eb] border border-slate-300"></div> You have not visited the question yet.</div>
+                    <div class="flex items-center gap-3"><div class="w-6 h-6 rounded bg-[#ef4444] shadow-sm"></div> You have not answered the question.</div>
+                    <div class="flex items-center gap-3"><div class="w-6 h-6 rounded bg-[#22c55e] shadow-sm"></div> You have answered the question.</div>
+                    <div class="flex items-center gap-3"><div class="w-6 h-6 rounded bg-[#a855f7] shadow-sm"></div> You have marked the question for review.</div>
+                </div>
+            </div>
+
+            <div class="mt-8 pt-6 border-t flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50 -mx-8 -mb-8 p-6 rounded-b-2xl">
+                <button onclick="backToDashboard()" class="w-full sm:w-auto text-slate-600 font-bold py-3 px-6 rounded-xl hover:bg-slate-200 transition">
+                    Back to Dashboard
+                </button>
+                <button onclick="startExam()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-xl transition shadow-lg hover:shadow-green-500/30">
+                    I am ready to begin
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. MAIN EXAM SCREEN -->
+    <div id="exam-screen" class="hidden flex-1 flex flex-col overflow-hidden">
+        <!-- Top Bar -->
+        <header class="bg-blue-700 text-white px-4 sm:px-6 py-3 flex justify-between items-center shadow-md z-10 shrink-0">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="font-bold text-lg sm:text-xl tracking-tight">Crackit Bhai</div>
+                <div id="header-test-name" class="hidden sm:block px-3 py-1 bg-blue-800 rounded-full text-xs font-semibold">Mock Test</div>
+            </div>
+            
+            <div class="flex items-center gap-3 sm:gap-6">
+                <!-- Timer -->
+                <div class="flex items-center gap-1.5 sm:gap-2 bg-slate-900/40 px-3 sm:px-4 py-1.5 rounded-lg border border-blue-500/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 text-red-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="hidden sm:inline text-slate-300 text-xs uppercase tracking-wider font-semibold">Time Left</span>
+                    <span id="timer" class="font-mono text-base sm:text-lg font-bold text-white tracking-widest">120:00</span>
+                </div>
+                
+                <!-- Profile -->
+                <div class="flex items-center gap-3 border-l border-blue-500/50 pl-3 sm:pl-6">
+                    <div id="exam-avatar" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-blue-400 bg-white text-blue-700 flex items-center justify-center font-bold text-sm sm:text-lg">S</div>
+                    <div class="text-sm hidden md:block">
+                        <div id="exam-student-name" class="font-bold leading-tight truncate max-w-[120px]">Student Name</div>
+                        <div class="text-blue-200 text-xs">Crackit Student</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="flex flex-1 overflow-y-auto md:overflow-hidden bg-slate-100 flex-col md:flex-row">
+            
+            <!-- Left Side: Question Area -->
+            <div class="flex-none md:flex-1 flex flex-col m-2 md:m-4 bg-white rounded-xl shadow-sm border border-slate-200 md:overflow-hidden relative">
+                
+                <div class="px-4 sm:px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">
+                    <h2 class="text-sm sm:text-lg font-bold text-slate-800 flex items-center gap-2">
+                        Question No. <span id="question-number-display" class="bg-blue-100 text-blue-700 px-2 sm:px-3 py-1 rounded-md text-lg sm:text-xl">1</span>
+                    </h2>
+                    <div class="flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-500 bg-white px-2 sm:px-3 py-1 rounded border shadow-sm">
+                        <span class="text-green-600">+1.0</span> <span class="text-slate-300">|</span> <span class="text-red-500">-0.25</span>
+                    </div>
+                </div>
+
+                <div class="p-4 sm:p-8 flex-none md:flex-1 md:overflow-y-auto">
+                    <div id="question-text" class="text-base sm:text-lg text-slate-800 font-medium mb-6 sm:mb-8 leading-relaxed whitespace-pre-wrap">
+                        Loading question...
+                    </div>
+                    
+                    <div id="options-container" class="space-y-3 sm:space-y-4 max-w-3xl">
+                        <!-- Options injected by JS -->
+                    </div>
+                </div>
+
+                <div class="px-4 sm:px-8 py-4 bg-slate-50 border-t border-slate-200 flex flex-wrap gap-2 justify-between items-center shrink-0">
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <button onclick="markForReview()" class="flex-1 sm:flex-none px-3 sm:px-4 py-2.5 rounded-lg border-2 border-slate-300 font-semibold text-slate-600 hover:bg-slate-100 transition text-xs sm:text-sm">
+                            Mark for Review
+                        </button>
+                        <button onclick="clearResponse()" class="flex-1 sm:flex-none px-3 sm:px-4 py-2.5 rounded-lg border-2 border-slate-300 font-semibold text-slate-600 hover:bg-slate-100 transition text-xs sm:text-sm">
+                            Clear
+                        </button>
+                    </div>
+                    <button onclick="saveAndNext()" class="w-full sm:w-auto mt-1 sm:mt-0 px-6 sm:px-8 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md transition text-sm sm:text-base">
+                        Save & Next
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Side: Palette & Sections -->
+            <div class="w-auto md:w-80 m-2 md:m-4 md:ml-0 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col shrink-0 flex-none md:overflow-hidden">
+                
+                <div class="p-3 bg-slate-800 text-white font-semibold text-sm flex justify-between items-center">
+                    <span>Sections</span>
+                </div>
+                
+                <div class="p-2 grid grid-cols-4 gap-2 border-b border-slate-200 bg-slate-50" id="section-tabs-container">
+                    <!-- Tabs injected by JS -->
+                </div>
+
+                <div class="p-4 flex-none md:flex-1 flex flex-col md:overflow-y-auto">
+                    <div class="text-sm font-bold text-slate-700 mb-4 pb-2 border-b border-slate-100" id="palette-section-name">
+                        Computer
+                    </div>
+                    
+                    <div id="question-palette" class="grid grid-cols-5 gap-2 sm:gap-3 mb-6">
+                        <!-- Buttons injected by JS -->
+                    </div>
+
+                    <div class="mt-auto pt-4 border-t border-slate-100 grid grid-cols-2 md:grid-cols-1 gap-2 text-[11px] sm:text-xs font-medium text-slate-600">
+                        <div class="flex items-center gap-2"><div class="w-4 h-4 rounded status-answered shadow-sm border border-green-600"></div> Answered</div>
+                        <div class="flex items-center gap-2"><div class="w-4 h-4 rounded status-not-answered shadow-sm border border-red-600"></div> Not Answered</div>
+                        <div class="flex items-center gap-2"><div class="w-4 h-4 rounded status-not-visited border border-gray-300"></div> Not Visited</div>
+                        <div class="flex items-center gap-2"><div class="w-4 h-4 rounded status-marked shadow-sm border border-purple-600"></div> Marked</div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-slate-50 border-t border-slate-200 shrink-0">
+                    <button onclick="submitExam()" class="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow-md transition">
+                        Submit Examination
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. RESULT SCREEN -->
+    <div id="result-screen" class="hidden flex-1 overflow-y-auto bg-slate-100 p-4 sm:p-6">
+        <div class="max-w-4xl mx-auto" id="printable-report">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6 mb-4 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1.5 bg-blue-600"></div>
+                
+                <div class="flex flex-col sm:flex-row justify-between items-start border-b pb-4 mb-4 gap-4">
+                    <div>
+                        <h1 class="text-2xl font-black text-slate-800 mb-1">Score Report</h1>
+                        <p class="text-slate-500 font-medium text-sm" id="report-test-name">JOA IT Mock Examination - Crackit Bhai</p>
+                    </div>
+                    <div class="text-left sm:text-right bg-slate-50 p-2.5 rounded-lg border border-slate-100 w-full sm:w-auto">
+                        <p class="text-[10px] text-slate-500 mb-0.5 uppercase tracking-wide font-bold">Candidate</p>
+                        <p id="result-student-name" class="font-bold text-base text-slate-800">Student Name</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+                    <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 text-center flex flex-col justify-center">
+                        <div class="text-2xl font-black text-blue-700 mb-0.5" id="res-total-score">0</div>
+                        <div class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Total Score</div>
+                    </div>
+                    <div class="bg-green-50 p-3 rounded-lg border border-green-100 text-center flex flex-col justify-center">
+                        <div class="text-xl font-bold text-green-700 mb-0.5" id="res-correct">0</div>
+                        <div class="text-[10px] font-bold text-green-600 uppercase tracking-wider">Correct (+1)</div>
+                    </div>
+                    <div class="bg-red-50 p-3 rounded-lg border border-red-100 text-center flex flex-col justify-center">
+                        <div class="text-xl font-bold text-red-700 mb-0.5" id="res-incorrect">0</div>
+                        <div class="text-[10px] font-bold text-red-600 uppercase tracking-wider">Incorrect (-0.25)</div>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 text-center flex flex-col justify-center">
+                        <div class="text-xl font-bold text-slate-700 mb-0.5" id="res-attempted">0</div>
+                        <div class="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Attempted</div>
+                    </div>
+                </div>
+
+                <div class="text-center text-slate-500 text-[10px] italic bg-yellow-50 p-2 rounded border border-yellow-100">
+                    * Computer-generated mock test report. Total = (Correct × 1) - (Incorrect × 0.25).
+                </div>
+                
+                <div id="ai-insights-container" class="mt-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-100 p-4 hidden no-print">
+                    <h3 class="text-sm font-bold text-indigo-900 mb-2 flex items-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                        </svg>
+                        AI Performance Analysis
+                    </h3>
+                    <div id="ai-insights-content" class="text-slate-700 text-xs leading-relaxed">
+                        <div class="flex items-center gap-2 text-indigo-600 font-semibold animate-pulse">
+                            Analyzing...
+                        </div>
+                    </div>
+                </div>
+
+                <div id="detailed-solutions" class="mt-6 border-t-2 border-slate-100 pt-6">
+                    <h3 class="text-lg font-bold text-slate-800 pb-2 mb-3 flex items-center gap-2">
+                        Detailed Question Analysis
+                    </h3>
+                    <div id="solutions-container" class="space-y-2.5">
+                        <!-- Solution Cards Injected by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row justify-center gap-4 max-w-4xl mx-auto pb-8">
+            <button onclick="downloadPDF()" id="pdf-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition flex justify-center items-center gap-2">
+                Download PDF Report
+            </button>
+            <button onclick="returnToDashboard()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition">
+                Return to Dashboard
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function getJoa939Questions() {
+            return [
+                {
+                    name: "Computer Science",
+                    questions: [
+                        { q: `Decimal number system has ______ digits.`, opts: [`10`, `2`, `9`, `16`], ans: 0, exp: `Decimal system uses base 10 (0 to 9).` },
+                        { q: `The value of (1010)2 in decimal number system is ______`, opts: [`10`, `8`, `14`, `12`], ans: 0, exp: `Binary 1010 = (1*8) + (0*4) + (1*2) + (0*1) = 10.` },
+                        { q: `Which of the following is not a valid hexadecimal number?`, opts: [`BAD`, `BEG`, `BED`, `ACE`], ans: 1, exp: `Hexadecimal uses 0-9 and A-F. 'G' is invalid.` },
+                        { q: `A binary number can be easily converted to equivalent hexadecimal number by forming groups of ______ successive bits starting from LSB.`, opts: [`4`, `2`, `3`, `5`], ans: 0, exp: `4 binary bits represent exactly one hexadecimal digit.` },
+                        { q: `What does MSB mean in binary number system?`, opts: [`Machine Specific Bus`, `Mechanical System Board`, `Microsoft Business`, `Most Significant Bit`], ans: 3, exp: `MSB stands for Most Significant Bit.` },
+                        { q: `What is the default text alignment in MS-Word?`, opts: [`Right`, `Center`, `Justified`, `Left`], ans: 3, exp: `By default, MS Word aligns text to the Left.` },
+                        { q: `In MS-Word, which of the following tools can be used to find synonyms of a word in a document?`, opts: [`Thesaurus`, `Autocomplete`, `Spellcheck`, `Autocorrect`], ans: 0, exp: `Thesaurus provides synonyms and antonyms.` },
+                        { q: `What is the role of Ctrl + Y shortcut key in MS-Word?`, opts: [`Paste Special`, `Spellcheck`, `Undo`, `Redo`], ans: 3, exp: `Ctrl + Y is used for Redo (reversing an Undo).` },
+                        { q: `Moving the cursor to the last cell of a table and pressing ______ key will append a new row to the table.`, opts: [`Enter`, `Insert`, `Tab`, `Down Arrow`], ans: 2, exp: `Pressing Tab in the last cell creates a new row.` },
+                        { q: `In MS-Word, which of the following tasks can be performed using ruler?`, opts: [`to change page margins`, `to set tabs`, `to set indents`, `All of these`], ans: 3, exp: `Rulers control margins, tabs, and indents.` },
+                        { q: `What is the default number of lines dropped when using drop cap option in MS-Word?`, opts: [`4`, `3`, `2`, `5`], ans: 1, exp: `Drop cap defaults to dropping 3 lines.` },
+                        { q: `Pressing ______ key three times select the current sentence in MS-Word.`, opts: [`F9`, `Ctrl + Q`, `F5`, `F8`], ans: 3, exp: `Pressing F8 three times selects a sentence.` },
+                        { q: `What feature helps you to insert the contents of the Clipboard as text without any formatting in MS Word?`, opts: [`Paste Special`, `Autocomplete`, `Thesaurus`, `Mail Merge`], ans: 0, exp: `Paste Special allows you to paste as Unformatted Text.` },
+                        { q: `Which of the following is not a type of page margin in MS-Word document?`, opts: [`right`, `top`, `center`, `left`], ans: 2, exp: `Center is an alignment type, not a margin.` },
+                        { q: `Portrait and Landscape are ______`, opts: [`page orientations`, `page sizes`, `page layouts`, `paper types`], ans: 0, exp: `These refer to how the page is oriented.` },
+                        { q: `Which of the following is not a valid section break in MS-Word?`, opts: [`Continuous`, `Previous Page`, `Odd Page`, `Next Page`], ans: 1, exp: `Previous Page is not a section break option.` },
+                        { q: `In MS-Word, the list of recipients in mail-merge is known as a ______`, opts: [`Data Source`, `Data Warehouse`, `Data Structure`, `Database`], ans: 0, exp: `The list of recipients is called the Data Source.` },
+                        { q: `What is the wildcard that matches one or more occurrences of a pattern in MS-Word search?`, opts: [`@`, `+`, `?`, `*`], ans: 3, exp: `Asterisk (*) matches any string of characters.` },
+                        { q: `What is the shortcut key in MS-Word to insert a manual line break?`, opts: [`Ctrl+Alt+Enter`, `Shift + Enter`, `Ctrl+Enter`, `Alt + Enter`], ans: 1, exp: `Shift + Enter inserts a soft return (line break).` },
+                        { q: `What key combination is used to move back to previous level of numbering/bullets in MS-Word?`, opts: [`Tab`, `Ctrl + Tab`, `Alt+Tab`, `Shift + Tab`], ans: 3, exp: `Shift + Tab decreases the list level.` },
+                        { q: `Font sizes are generally measured in points which is equal to ______ of an inch.`, opts: [`1/92`, `1/96`, `1/64`, `1/72`], ans: 3, exp: `One point is exactly 1/72 of an inch.` },
+                        { q: `What is the size of an A4 paper sheet?`, opts: [`244 mm x 244 mm`, `230 mm x 287 mm`, `210 mm x 297 mm`, `197 mm x 247 mm`], ans: 2, exp: `Standard A4 is 210 x 297 mm.` },
+                        { q: `A computer can perform complex calculations with the same speed and accuracy from the start till the end without getting tired. This characteristic of a computer system is called ______`, opts: [`Agility`, `Reliability`, `Diligence`, `Versatility`], ans: 2, exp: `Diligence means the ability to work tirelessly.` },
+                        { q: `Which of the following is considered to be the world's first commercially available microprocessor?`, opts: [`Pentium`, `Intel 4004`, `ENIAC`, `CRAY-1`], ans: 1, exp: `The Intel 4004 (1971) was the first commercial microprocessor.` },
+                        { q: `The word algorithm is originated from the name of which Islamic scholar?`, opts: [`Al-Gore`, `Al-Khwarizmi`, `Abu al-Hasan al-Ahwazi`, `Omar Khayyam`], ans: 1, exp: `Named after Persian mathematician Al-Khwarizmi.` },
+                        { q: `Who is considered to be the world's first programmer?`, opts: [`Lady Ada Lovelace`, `Bill Gates`, `Charles Babbage`, `Allan Turing`], ans: 0, exp: `Ada Lovelace wrote the first algorithm for Babbage's engine.` },
+                        { q: `Which of the following cellular technology is also known as 2.5G?`, opts: [`GSM`, `LTE`, `4G`, `GPRS`], ans: 3, exp: `GPRS is often called 2.5G.` },
+                        { q: `Who among the following is founder of Twitter?`, opts: [`Vinod Khosla`, `Mark Zuckerberg`, `Jack Dorsey`, `David Filo`], ans: 2, exp: `Jack Dorsey co-founded Twitter.` },
+                        { q: `Which of the following is not a version of Windows operating system?`, opts: [`Windows 7`, `Windows 9`, `Windows 8`, `Windows 10`], ans: 1, exp: `Windows 9 was skipped; Microsoft went from 8 to 10.` },
+                        { q: `A program written in ______ generation programming languages is portable.`, opts: [`1st`, `2nd`, `3rd`, `All of these`], ans: 2, exp: `3rd Gen languages (like C, Java) are portable.` },
+                        { q: `Which of the following types of graphics represents images as a set of basic drawing shapes like lines, circles and curves etc.?`, opts: [`Pixel-based`, `Raster`, `Bitmapped`, `Vector`], ans: 3, exp: `Vector graphics use mathematical shapes.` },
+                        { q: `Which of the following is not a secondary storage device?`, opts: [`Solid State Disk`, `Random Access Memory`, `Pen Drive`, `Hard Disk`], ans: 1, exp: `RAM is primary (main) memory.` },
+                        { q: `Which of the following is a cloud based file storage service provided by Google?`, opts: [`Google Slides`, `Google Keep`, `Google Drive`, `Google One`], ans: 2, exp: `Google Drive is the cloud storage service.` },
+                        { q: `Desktop and laptop computers are also known as ______`, opts: [`Mini Computers`, `Server Computers`, `Mainframes`, `Microcomputers`], ans: 3, exp: `They use microprocessors, hence microcomputers.` },
+                        { q: `Which of the following is the correct increasing order of memory capacity?`, opts: [`Megabyte < Gigabyte < Petabyte < Terabyte`, `Gigabyte < Megabyte < Terabyte < Petabyte`, `Megabyte < Gigabyte < Terabyte < Petabyte`, `Gigabyte < Megabyte < Petabyte < Terabyte`], ans: 2, exp: `MB < GB < TB < PB.` },
+                        { q: `Who among the following proposed the concept of "Stored Program Execution"?`, opts: [`John von Neumann`, `Bob Kahn`, `Allan Turing`, `Tim Berners-Lee`], ans: 0, exp: `Von Neumann Architecture relies on stored programs.` },
+                        { q: `Which generation of computer systems replaced vacuum tubes with transistors?`, opts: [`Second`, `Third`, `Fourth`, `Fifth`], ans: 0, exp: `2nd Gen used Transistors.` },
+                        { q: `The process of writing data on a CD is also known as ______ data to the CD.`, opts: [`roasting`, `frying`, `burning`, `baking`], ans: 2, exp: `Writing to optical disks is called 'burning'.` },
+                        { q: `Which register is used as a working area in CPU?`, opts: [`Accumulator`, `Stack Pointer`, `Program Counter`, `Instruction Register`], ans: 0, exp: `The accumulator stores intermediate ALU results.` },
+                        { q: `What is the full form of SEO?`, opts: [`Software Engineering Organization`, `Search Engine Optimization`, `Semi-Elastic Object`, `Search Enabled Operation`], ans: 1, exp: `Search Engine Optimization.` },
+                        { q: `Which provides mobile users with positioning, navigation and timing services?`, opts: [`EDGE`, `GPRS`, `GPS`, `Bluetooth`], ans: 2, exp: `GPS stands for Global Positioning System.` },
+                        { q: `Which of the following is a vector graphics output device?`, opts: [`Laser Printer`, `CRT Monitor`, `Plotter`, `Dot Matrix Printer`], ans: 2, exp: `Plotters use pens to draw continuous vector lines.` },
+                        { q: `Which of the following software tools is most suitable to create brochures, newsletters and books?`, opts: [`CorelDraw`, `Photoshop`, `PowerPoint`, `PageMaker`], ans: 3, exp: `Adobe PageMaker (and InDesign) is for Desktop Publishing.` },
+                        { q: `Decorative line or taper added to the beginning and/or end of a letter's stem is called a/an ______`, opts: [`Ascender`, `Padding`, `Serif`, `Kerning`], ans: 2, exp: `Serifs are the small decorative lines on fonts.` },
+                        { q: `The user id of a Twitter account is also known as ______`, opts: [`Tweet`, `Handle`, `Hashtag`, `Mention`], ans: 1, exp: `Twitter usernames are referred to as handles (@).` },
+                        { q: `What is the full form of "QR Code"?`, opts: [`Quick Rectangular Code`, `Quick Response Code`, `Quartz Readable Code`, `Quick Readable Code`], ans: 1, exp: `QR stands for Quick Response.` },
+                        { q: `What does the letter 'C' denote in the acronym CPU?`, opts: [`Control`, `Common`, `Central`, `Computer`], ans: 2, exp: `CPU = Central Processing Unit.` },
+                        { q: `Which of the following is not a part of CPU instruction cycle?`, opts: [`Load`, `Decode`, `Execute`, `Fetch`], ans: 0, exp: `The standard cycle is Fetch-Decode-Execute.` },
+                        { q: `A CPU consists of control unit, ______, and a memory unit.`, opts: [`system unit`, `input/output`, `arithmetic & logic unit`, `peripheral unit`], ans: 2, exp: `CPU = CU + ALU + Registers/Memory.` },
+                        { q: `Which is required to make a hard copy of a digital document?`, opts: [`Printer`, `Digitizer`, `Scanner`, `Joystick`], ans: 0, exp: `Printers output digital to physical paper.` },
+                        { q: `Dynamic RAM consumes ______ power and is ______ as compared to static RAM.`, opts: [`less, slower`, `more, faster`, `less, faster`, `more, slower`], ans: 0, exp: `DRAM is slower and uses less power than SRAM.` },
+                        { q: `CMOS is a small amount of memory on a computer motherboard that stores the BIOS settings. What is the full form of CMOS?`, opts: [`Cache Memory Operated System`, `Complementary Metal Oxide Semiconductor`, `Common Machine Operating System`, `Computer Memory On Semiconductor`], ans: 1, exp: `Complementary Metal Oxide Semiconductor.` },
+                        { q: `When power of a computer is turned on, a diagnostic test is carried out to check the keyboard, RAM, disk drives, and other hardware. This test is known as ______`, opts: [`POST`, `REST`, `BIOS`, `CMOS`], ans: 0, exp: `POST = Power-On Self-Test.` },
+                        { q: `Which comprises of a series of RAM integrated circuits that can be installed in the motherboard's memory slots?`, opts: [`DIMM`, `NIC`, `SCSI`, `PCMCIA`], ans: 0, exp: `DIMM = Dual In-line Memory Module.` },
+                        { q: `Which of the following is a non-impact printer?`, opts: [`Daisy Wheel Printer`, `Line Printer`, `Dot Matrix Printer`, `Inkjet Printer`], ans: 3, exp: `Inkjet does not strike the paper physically.` },
+                        { q: `What does the letter 'M' stand for in CMYK color model?`, opts: [`Mustard`, `Magenta`, `Maroon`, `Mango`], ans: 1, exp: `Cyan, Magenta, Yellow, Key (Black).` },
+                        { q: `Which of the following is not a unit for measuring CPU speed?`, opts: [`FLOPS`, `GHz`, `MIPS`, `TWIPS`], ans: 3, exp: `TWIPS is a typographic measurement, not CPU speed.` },
+                        { q: `CAT5, CAT6 and CAT7 are the types of ______`, opts: [`Fibre Cables`, `Wireless Technologies`, `UTP Cables`, `Coaxial Cables`], ans: 2, exp: `These are Unshielded Twisted Pair (Ethernet) cables.` },
+                        { q: `Which connectors are used with UTP cables?`, opts: [`VGA`, `RJ11`, `BNC`, `RJ45`], ans: 3, exp: `RJ45 is the standard connector for Ethernet.` },
+                        { q: `Which layer exists between application and session layers in ISO OSI network reference model?`, opts: [`Network`, `Transport`, `Data Link`, `Presentation`], ans: 3, exp: `Layer order: Session -> Presentation -> Application.` },
+                        { q: `HTTP operates in which layer of network?`, opts: [`Network`, `Data Link`, `Transport`, `Application`], ans: 3, exp: `HTTP is an Application layer (Layer 7) protocol.` },
+                        { q: `Which of the following IP address is reserved for private use and is not allowed to be transmitted across the Internet?`, opts: [`192.168.1.91`, `170.21.14.44`, `12.12.10.14`, `202.40.17.21`], ans: 0, exp: `192.168.x.x is a private IP range.` },
+                        { q: `GSM, LTE, CDMA are which technologies?`, opts: [`Cellular`, `Bluetooth`, `NFC`, `Wi Fi`], ans: 0, exp: `These are mobile cellular network standards.` },
+                        { q: `Which of the following operating systems is free and open-source?`, opts: [`iOS`, `Windows`, `Unix`, `Linux`], ans: 3, exp: `Linux is famous for being open-source.` },
+                        { q: `A program in execution is called a ______`, opts: [`script`, `process`, `thread`, `software`], ans: 1, exp: `A running program is called a process.` },
+                        { q: `When a file is deleted in Windows, it is moved to ______`, opts: [`Recycle Bin`, `Dust Bin`, `Trash Bin`, `Garbage Bin`], ans: 0, exp: `Deleted files go to the Recycle Bin.` },
+                        { q: `Which of the following characters is not allowed in a file name in Windows?`, opts: [`$`, `*`, `&`, `#`], ans: 1, exp: `Asterisk (*) is a wildcard and cannot be used in names.` },
+                        { q: `What is the shortcut key to open "Run" dialog box in Windows?`, opts: [`Ctrl+Shift+R`, `Windows Logo Key + R`, `Windows Logo Key + U`, `Shift + R`], ans: 1, exp: `Win + R opens the Run dialog.` },
+                        { q: `Which of the following is the default web browser in Windows 10 fresh installation?`, opts: [`Mozilla Firefox`, `Chrome`, `Edge`, `Safari`], ans: 2, exp: `Microsoft Edge is the default browser in Win 10.` },
+                        { q: `What is the shortcut key to run "Snip & Sketch" tool in Windows 10?`, opts: [`Shift+Alt+S`, `Shift+Ctrl+S`, `Ctrl+Shift+Alt+S`, `Shift+Win+S`], ans: 3, exp: `Win + Shift + S opens the snipping tool.` },
+                        { q: `Which command in Windows 10 provide options to manage your computer's drives (disks, partitions, volumes etc.)?`, opts: [`chkdsk`, `diskpart`, `scandisk`, `defrag`], ans: 1, exp: `Diskpart is the command-line disk management tool.` },
+                        { q: `Which command in Windows 10 displays IP addresses, subnet mask, and default gateway for all network adapters?`, opts: [`ifconfig`, `ipconfig`, `ping`, `netstat`], ans: 1, exp: `ipconfig (Windows) / ifconfig (Linux).` },
+                        { q: `Which feature of Windows 10 allows the user to quickly minimize all open windows except the active one?`, opts: [`Snap`, `Peek`, `Show Desktop`, `Shake`], ans: 3, exp: `Aero Shake minimizes other windows when you shake the active one.` },
+                        { q: `What is the shortcut key to close the active application window in Windows 10?`, opts: [`Alt+F4`, `Ctrl+Alt+Del`, `Ctrl+C`, `F10`], ans: 0, exp: `Alt+F4 closes the current window.` },
+                        { q: `Which of the following is not a built-in slide layout in PowerPoint?`, opts: [`Summary`, `Title and Content`, `Title Slide`, `Comparison`], ans: 0, exp: `Summary is not a default slide layout.` },
+                        { q: `Slide ______ are the visual effects that appear as one slide changes to another.`, opts: [`Rehearse`, `Show`, `Transition`, `Animation`], ans: 2, exp: `Transitions occur between slides.` },
+                        { q: `Which is a visual effect that is added to text and graphics on a slide rather than to the slide itself?`, opts: [`Rehearse Timing`, `Tweening`, `Animation`, `Transition`], ans: 2, exp: `Animations are applied to objects on a slide.` },
+                        { q: `Which of the following keys must be pressed while drawing oval to make a perfect circle in MS-PowerPoint?`, opts: [`Insert`, `Alt`, `Shift`, `Ctrl`], ans: 2, exp: `Holding Shift constrains aspect ratio.` },
+                        { q: `When you click a placeholder or an object in MS-PowerPoint, ______ sizing handles appear around it.`, opts: [`8`, `4`, `2`, `6`], ans: 0, exp: `8 handles appear (4 corners, 4 edges).` },
+                        { q: `A PowerPoint ______ is a pattern or blueprint of a slide or group of slides that is saved as a potx file.`, opts: [`style`, `custom`, `template`, `slide show`], ans: 2, exp: `Templates are saved with .potx extension.` },
+                        { q: `Which of the following is not a transition effect in PowerPoint?`, opts: [`Checkerboard`, `Dissolve`, `Fade`, `Drop Cap`], ans: 3, exp: `Drop Cap is a text formatting feature in Word.` },
+                        { q: `Which of the following programming languages is CPU dependent?`, opts: [`SQL`, `Assembly Language`, `Python`, `Java`], ans: 1, exp: `Assembly is specific to processor architecture.` },
+                        { q: `Which of the following is a system software?`, opts: [`Spreadsheet`, `Word Processor`, `Media Player`, `Compiler`], ans: 3, exp: `Compilers act closely with the system to translate code.` },
+                        { q: `Which errors in a program leads to undesired or incorrect output?`, opts: [`Logical`, `Runtime`, `Syntactic`, `Syntax`], ans: 0, exp: `Logical errors don't crash the program but produce wrong results.` },
+                        { q: `Which of the following software is not a part of standard Windows installation?`, opts: [`MS Office`, `Paint`, `Web Browser`, `Notepad`], ans: 0, exp: `MS Office must be purchased/installed separately.` },
+                        { q: `Which application software is required to open a PDF file?`, opts: [`Adobe Photoshop`, `Microsoft Word`, `Adobe Reader`, `Microsoft PowerPoint`], ans: 2, exp: `Adobe Reader is the standard for PDFs.` },
+                        { q: `What is the address of the cell at row 25 and column 30 of an Excel worksheet?`, opts: [`AC25`, `AD25`, `AN30`, `AD30`], ans: 1, exp: `Column 26 is Z, 27 is AA, 28 is AB, 29 is AC, 30 is AD.` },
+                        { q: `Which of the following is not a valid cell address in MS Excel?`, opts: [`A$5`, `$A5`, `$A$5`, `$A$G`], ans: 3, exp: `Row must be a number, not a letter ($G).` },
+                        { q: `How many cells are there in the cell range B2:F12 in MS Excel?`, opts: [`55`, `48`, `52`, `44`], ans: 0, exp: `Cols B to F = 5. Rows 2 to 12 = 11. 11 * 5 = 55.` },
+                        { q: `Which of the following is an absolute cell reference?`, opts: [`@A@10`, `$A$7`, `AB7`, `A5`], ans: 1, exp: `Absolute references use the $ symbol.` },
+                        { q: `What will be the value of a cell containing the formula given below? =5*900%`, opts: [`40`, `45`, `50`, `55`], ans: 1, exp: `900% = 9. So 5 * 9 = 45.` },
+                        { q: `What will be the address of a cell range from A3 to G5 in MS Excel?`, opts: [`A3:G5`, `A3$G5`, `A3;G5`, `A3-G5`], ans: 0, exp: `Ranges are denoted by a colon (A3:G5).` },
+                        { q: `Consider the MS Excel worksheet given below:\nA1: Name, B1: Designation, C1: Salary, D1: (Blank)\nA2: Aman, B2: Assistant Manager, C2: 78000\nA3: Surinder, B3: Programmer, C3: 65000\nA4: Dev Paul, B4: Operator, C4: 28000\nWhat will be the value returned by the function =COUNTA(A1:D5)?`, opts: [`12`, `16`, `14`, `15`], ans: 0, exp: `COUNTA counts non-empty cells. There are 4 rows with 3 columns filled = 12.` },
+                        { q: `Which of the following is the MS Excel function to count the number of non-empty cells in a given range?`, opts: [`COUNTNB`, `COUNTA`, `COUNTNE`, `COUNT`], ans: 1, exp: `COUNTA counts all non-empty cells.` },
+                        { q: `How many worksheets are present in an Excel workbook by default?`, opts: [`3`, `4`, `2`, `5`], ans: 0, exp: `Older versions default to 3. (Modern ones default to 1, but 3 is the standard exam answer).` },
+                        { q: `Which of the following statements is true about default cell alignments in Excel?`, opts: [`Both text and number are aligned left.`, `Both text and number are aligned right.`, `Text is aligned right and number is aligned left.`, `Text is aligned left and number is aligned right.`], ans: 3, exp: `Text aligns left, numbers align right.` },
+                        { q: `What will be the value returned by the formula =WORKDAY("01-01-2022", 22) in Excel? (Assume Sunday on 01-01-2022)`, opts: [`30-Jan-2022`, `03-Feb-2022`, `28-Jan-2022`, `01-Feb-2022`], ans: 3, exp: `Skips weekends, landing exactly on Feb 1.` },
+                        { q: `Rotating the data from rows to columns or vice-versa in a worksheet is called ______`, opts: [`Pivot table`, `Scaling`, `Transposing`, `Range`], ans: 2, exp: `Transposing swaps rows and columns.` },
+                        { q: `Which of the following is not a chart type supported by MS Excel?`, opts: [`Area Chart`, `Scatter Plot`, `Volume Chart`, `Line Chart`], ans: 2, exp: `Volume Chart is not a native Excel chart.` },
+                        { q: `Which of the following features in MS Excel lets you record a sequence of keystrokes and play them again when required?`, opts: [`Macro`, `Format Painter`, `Wrap Text`, `Pivot Table`], ans: 0, exp: `Macros automate repetitive tasks.` },
+                        { q: `Which of the following IP addresses is known as loopback address?`, opts: [`192.168.0.1`, `127.0.0.1`, `172.16.24.1`, `10.0.0.1`], ans: 1, exp: `127.0.0.1 represents localhost (loopback).` },
+                        { q: `Which of the following network protocols is used for mapping IPv4 addresses to media access control (MAC) addresses?`, opts: [`DNS`, `SNMP`, `ARP`, `TCP`], ans: 2, exp: `ARP resolves IP addresses to MAC addresses.` },
+                        { q: `Which of the following is not a valid local IPv4 address?`, opts: [`192.168.1.1`, `10.0.0.5`, `260.240.1.1`, `172.16.24.1`], ans: 2, exp: `IPv4 octets cannot exceed 255 (260 is invalid).` },
+                        { q: `Which of the following commands make use of ICMP messages to test the reachability of a specified computer on the network?`, opts: [`ipconfig`, `arp`, `ping`, `touch`], ans: 2, exp: `Ping sends ICMP Echo Request messages.` },
+                        { q: `Which of the following is a popular Linux distribution supported by IBM?`, opts: [`Red Hat`, `Black Cap`, `Blue Tee`, `Yellow Tie`], ans: 0, exp: `Red Hat was acquired by IBM.` },
+                        { q: `Which is the on-demand delivery of IT resources over the Internet with pay-as-you-go pricing?`, opts: [`Cloud Computing`, `Artificial Intelligence`, `Machine Learning`, `Internet of Things`], ans: 0, exp: `This is the definition of Cloud Computing.` },
+                        { q: `Which virus released in 1986 is considered to be the first IBM PC compatible virus?`, opts: [`Heart`, `Brain`, `Mind`, `Germ`], ans: 1, exp: `The Brain boot sector virus.` },
+                        { q: `Which is a malware that looks like a genuine application to the user?`, opts: [`Virus`, `Trojan horse`, `Cookie`, `Worm`], ans: 1, exp: `Trojans disguise themselves as normal software.` },
+                        { q: `What is the full form of TCP/IP?`, opts: [`Transit Carrier Protocol/Information Protocol`, `Telecommunication Protocol/Interlink Protocol`, `Transmission Carrier Protocol/Internet Protocol`, `Transmission Control Protocol/Internet Protocol`], ans: 3, exp: `Transmission Control Protocol / Internet Protocol.` },
+                        { q: `Which is a plain text information about browsing session stored on the client computer by the web server?`, opts: [`Database`, `URL`, `Cookie`, `Signature`], ans: 2, exp: `Cookies store session info locally.` },
+                        { q: `Who among the following is known as the father of World Wide Web?`, opts: [`Tim Berners-Lee`, `Charles Babbage`, `John McCarthy`, `Vinton Cerf`], ans: 0, exp: `Tim Berners-Lee invented the WWW.` },
+                        { q: `Which of the following is a popular file compression utility software?`, opts: [`Convert`, `Win Word`, `WinZip`, `Scandisk`], ans: 2, exp: `WinZip is for file compression.` },
+                        { q: `Which is a combinational logic circuit that switches one of several input lines through to a single common output line?`, opts: [`Counter`, `Decoder`, `Register`, `Multiplexer`], ans: 3, exp: `Multiplexers (MUX) route inputs to a single output.` },
+                        { q: `Which of the following HTML tags is used to draw a horizontal line in a web page?`, opts: [`<li>`, `<hr>`, `<tr>`, `<br>`], ans: 1, exp: `<hr> stands for Horizontal Rule.` },
+                        { q: `How many heading levels are supported by HTML?`, opts: [`5`, `6`, `7`, `8`], ans: 1, exp: `HTML supports H1 through H6.` },
+                        { q: `Which of the following HTML tags is used to create a cell in a table row?`, opts: [`<cell>`, `<br>`, `<td>`, `<dd>`], ans: 2, exp: `<td> stands for Table Data.` },
+                        { q: `Which of the following attribute of an <img> HTML element is used to specify the URL of the image file?`, opts: [`src`, `href`, `file`, `target`], ans: 0, exp: `src (source) defines the image path.` },
+                        { q: `How an inline CSS is used in an HTML document?`, opts: [`By using <meta> element in the <head>`, `By using style attribute of the HTML element.`, `By using <style> element in the <head>`, `By saving the CSS rules in an external file`], ans: 1, exp: `Inline CSS is applied directly using the style attribute.` },
+                        { q: `What is the correct CSS rule to set the background color of <h1> elements to red?`, opts: [`h1{background-color: red;}`, `.h1{background-color: red;}`, `#h1{background-color: red;}`, `<h1>{background-color: red;}`], ans: 0, exp: `Selecting the h1 tag directly applies it globally to all h1s.` },
+                        { q: `Which of the following HTML tags is used to create a hyperlink in a webpage?`, opts: [`<link>`, `<li>`, `<a>`, `<href>`], ans: 2, exp: `<a> stands for Anchor tag.` },
+                        { q: `In analog computer:\nI. Input is first converted to digital form\nII. Input is never converted to digital form\nIII. Output is displayed in digital form\nIV. All of these\nPick the correct statement:`, opts: [`I & II`, `II, III and IV`, `Only II`, `None of these`], ans: 2, exp: `Analog computers process continuous signals natively.` },
+                        { q: `What is the responsibility of the logical unit in the CPU of a computer?`, opts: [`To control flow of information`, `To produce result`, `To compare data`, `None of these`], ans: 2, exp: `The Arithmetic Logic Unit handles mathematical and logical comparisons.` },
+                        { q: `MICR stands for ______`, opts: [`Magnetic Ink Character Region`, `Magnetic Ink Character Recognition`, `Magnetic Ink Code Recognition`, `Meta Ink Character Recognition`], ans: 1, exp: `Used widely in banking for check processing.` },
+                        { q: `Which printer uses light beam and electrostatically sensitive black powder?`, opts: [`Dot matrix printer`, `Daisy wheel printer`, `Chain printer`, `Laser printer`], ans: 3, exp: `Laser printers use toner (powder).` },
+                        { q: `Which is an example of non-volatile memory?`, opts: [`RAM`, `ROM`, `LSI`, `VLSI`], ans: 1, exp: `ROM retains data without power.` },
+                        { q: `Secondary storage does not ______`, opts: [`require constant power`, `use magnetic media`, `store information for later retrieval`, `None of these`], ans: 0, exp: `Secondary storage (like HDDs) keeps data without power.` },
+                        { q: `Conversion of binary number (1001010)2 to its decimal number is ______`, opts: [`(63)10`, `(72)10`, `(74)10`, `(97)10`], ans: 2, exp: `64 + 8 + 2 = 74.` },
+                        { q: `Which is a collection of system programs that together controls the operation on a computer system?`, opts: [`Operating system`, `Application software`, `Both (A) & (B)`, `None of these`], ans: 0, exp: `OS manages hardware and software resources.` },
+                        { q: `Which is classified as low level language?`, opts: [`COBOL`, `C++`, `Machine language`, `Both (A) and (B)`], ans: 2, exp: `Machine language is the lowest level (binary).` },
+                        { q: `When you install a new program on your computer, it is typically added to the ______`, opts: [`All programs`, `Select programs`, `Start programs`, `Desktop programs`], ans: 0, exp: `Appears in the All Programs list / Start Menu.` },
+                        { q: `Which term is used in MS Word to describe the act of correcting something?`, opts: [`Erase`, `Formatting`, `Correcting`, `Edit`], ans: 3, exp: `Editing is the act of making changes.` },
+                        { q: `By default the cell content alignment in MS Excel is ______`, opts: [`left aligned`, `centrally aligned`, `text left aligned and numbers right aligned`, `None of these`], ans: 2, exp: `Text goes left, numbers go right.` },
+                        { q: `A file which contains readymade style slides that can be used for a presentation in MS PowerPoint is called ______`, opts: [`Wizard`, `Autostyle`, `Pre-formatting`, `Template`], ans: 3, exp: `Templates provide pre-designed layouts.` },
+                        { q: `In DBMS, which level of abstraction describes how data is stored?`, opts: [`Logical level`, `Conceptual level`, `Physical level`, `Schema`], ans: 2, exp: `Physical level handles actual storage mechanisms.` },
+                        { q: `The interactive transmission of data within a time sharing system may be best suited to ______`, opts: [`simplex lines`, `half duplex lines`, `full duplex lines`, `None of these`], ans: 2, exp: `Full duplex allows simultaneous two-way transmission.` },
+                        { q: `Personal logs or journal entries posted on the web are known as ______`, opts: [`blogs`, `list servers`, `web carts`, `subject directories`], ans: 0, exp: `Web-logs are commonly called blogs.` },
+                        { q: `Worms normally move around and infect other machines through ______`, opts: [`computer programs`, `computer networks`, `computer hardware`, `None of these`], ans: 1, exp: `Worms spread primarily across networks.` },
+                        { q: `NAND gates can be used to perform which type of operations?`, opts: [`NOT`, `OR`, `AND`, `All of these`], ans: 3, exp: `NAND is a universal gate.` },
+                        { q: `The compiler converts your C++ instructions into ______`, opts: [`object code`, `edited code`, `source code`, `translated code`], ans: 0, exp: `Compilers output machine/object code.` },
+                        { q: `MS-DOS supports file names upto ______ characters in length.`, opts: [`two`, `four`, `six`, `eight`], ans: 3, exp: `Uses 8.3 filename format (8 char name).` }
+                    ]
+                },
+                {
+                    name: "General Knowledge",
+                    questions: [
+                        { q: `Which of the following presents the most significant feature of Indus Valley civilization?`, opts: [`Burnt brick buildings`, `Art & architecture`, `Buildings of worship`, `First true arches`], ans: 0, exp: `They were famous for advanced baked-brick architecture.` },
+                        { q: `The chief impact of vedic culture on Indian history was the ______`, opts: [`Consolidation of caste system`, `Growth of Sanskrit`, `Progress of Philosophy`, `Rise of other worldly outlook`], ans: 0, exp: `The rigid Varna (caste) system was consolidated.` },
+                        { q: `Buddha's preachings were mainly in regard to ______`, opts: [`idol worship`, `belief in one God`, `purity of thought and conduct`, `practice of rituals`], ans: 2, exp: `Buddhism focuses on ethical conduct and mental purity.` },
+                        { q: `Hindu colonies were founded in the South-East Asian countries mostly during the period of the ______`, opts: [`Guptas`, `Mauryas`, `Rajputs`, `Cholas`], ans: 3, exp: `Cholas had massive naval influence in South-East Asia.` },
+                        { q: `Which of the following causes was not responsible for the downfall of Mughal empire?`, opts: [`Deccan policy of Aurangzeb`, `Religious policy of Aurangzeb`, `Mansabdari system`, `Revolts in various provinces of the empire`], ans: 2, exp: `Mansabdari was an efficient system introduced by Akbar.` },
+                        { q: `Pallava kings are remembered as the makers of rock cut temples at ______`, opts: [`Rameswaram`, `Thanjavur`, `Khajuraho`, `Mahabalipuram`], ans: 3, exp: `They built the famous Shore Temple.` },
+                        { q: `The Sultan who refused to recognize the authority of the Caliph was ______`, opts: [`Ghiyasuddin Tughlaq`, `Alauddin Khilji`, `Qutbuddin Mubarak`, `Muhammad-bin Tughlaq`], ans: 2, exp: `Mubarak Khalji declared himself the Caliph.` },
+                        { q: `Which is the most significant contribution of Sardar Vallabhbhai Patel to modern India?`, opts: [`His Presidentship of Indian National Congress`, `His role in Non-Cooperation Movement`, `His participation in Quit India Movement`, `His achievement of integration of princely states`], ans: 3, exp: `He successfully unified over 500 princely states.` },
+                        { q: `Why did Rabindranath Tagore renounce his knighthood?`, opts: [`He wanted to join Congress`, `Dissatisfied with Govt. of India Act 1919`, `Anguish over atrocities in Punjab (Jallianwala Bagh)`, `Wished to participate in satyagraha`], ans: 2, exp: `Renounced in protest of the Jallianwala Bagh massacre.` },
+                        { q: `The importance of Gandhiji's Non-Cooperation Movement was that ______`, opts: [`it was a great movement on a large scale`, `non-violence was employed for the first time as an effective weapon`, `it showed the ability to endure`, `None of these`], ans: 1, exp: `First mass demonstration of Satyagraha (non-violence).` },
+                        { q: `Which of the following is a feature common to both the Indian Federation and the American Federation?`, opts: [`A single citizenship`, `Dual Judiciary`, `Three lists in the Constitution`, `A federal Supreme Court to interpret the Constitution`], ans: 3, exp: `Both have an apex Supreme Court.` },
+                        { q: `Which is not specifically mentioned in Article 19 of the Constitution?`, opts: [`Freedom of speech and expression`, `Freedom to assemble peacefully without arms`, `Freedom to move freely`, `Freedom to the press`], ans: 3, exp: `Press freedom is implied, but not explicitly stated.` },
+                        { q: `What is the minimum age to become a Rajya Sabha member?`, opts: [`21 years`, `25 years`, `30 years`, `35 years`], ans: 2, exp: `Rajya Sabha requires 30 years, Lok Sabha 25.` },
+                        { q: `When a financial emergency is proclaimed ______`, opts: [`repayment of government debts will stop`, `payment of salaries will be postponed`, `salaries and allowances of any class of employees may be reduced`, `Union budget will not be presented`], ans: 2, exp: `The President can reduce salaries of govt employees.` },
+                        { q: `Nationalisation of banks was done with the purpose of ______`, opts: [`financing the industries`, `improving credit facilities`, `consolidating the economy`, `improving security of deposits`], ans: 2, exp: `To align banking with national economic goals.` },
+                        { q: `An indirect instrument of monetary policy is ______`, opts: [`Statutory Liquidity Ratio`, `Cash Reserve Ratio`, `Bank Rate`, `Open Market Operations`], ans: 3, exp: `OMO is an indirect tool used by RBI.` },
+                        { q: `The lowest layer of atmosphere is ______`, opts: [`Troposphere`, `Stratosphere`, `Ionosphere`, `Mesosphere`], ans: 0, exp: `Weather phenomena occur in the Troposphere.` },
+                        { q: `Which is a metamorphic rock?`, opts: [`Limestone`, `Granite`, `Basalt`, `Marble`], ans: 3, exp: `Marble is metamorphosed limestone.` },
+                        { q: `A stretch of sea water, partly or fully separated by a narrow strip from the main sea is called ______`, opts: [`Bay`, `Isthmus`, `Lagoon`, `Strait`], ans: 2, exp: `Lagoons are shallow bodies of water separated by barriers.` },
+                        { q: `Indian desert is known as ______`, opts: [`Gobi`, `Sahara`, `Thar`, `Atacama`], ans: 2, exp: `Thar Desert is the Great Indian Desert.` },
+                        { q: `Loktak is a ______`, opts: [`River`, `Valley`, `Mountain range`, `Lake`], ans: 3, exp: `Loktak is a famous freshwater lake in Manipur.` },
+                        { q: `Which of the following area of Indian subcontinent becomes the area of low pressure in summer?`, opts: [`Rann of Kutch`, `Rajasthan`, `North Western India`, `Meghalaya`], ans: 2, exp: `NW India heats up creating an intense low pressure zone.` },
+                        { q: `'The Valley of Flowers' is located in which state?`, opts: [`H.P.`, `U.P.`, `Sikkim`, `Uttarakhand`], ans: 3, exp: `Located in the Garhwal Himalayas, Uttarakhand.` },
+                        { q: `'Mumbai High' is related to ______`, opts: [`Petroleum`, `Iron`, `Tomb`, `Jute`], ans: 0, exp: `It is an offshore oilfield.` },
+                        { q: `Respiration process requires ______`, opts: [`Oxygen`, `Water`, `Heat`, `Sunlight`], ans: 0, exp: `Oxygen is needed for aerobic cellular respiration.` },
+                        { q: `The large amount of sugar present in human blood is ______`, opts: [`Sucrose`, `Glucose`, `Fructose`, `Lactose`], ans: 1, exp: `Blood sugar is primarily glucose.` },
+                        { q: `Persons suffering from myopia are advised to use ______`, opts: [`Convex lens`, `Concave lens`, `Plano-Concave lens`, `Plano-Convex lens`], ans: 1, exp: `Concave lenses correct near-sightedness (myopia).` },
+                        { q: `The device used to change the speed of an electric fan is ______`, opts: [`Amplifier`, `Regulator`, `Switch`, `Rectifier`], ans: 1, exp: `A regulator varies the voltage/current.` },
+                        { q: `Chemically Lime water is ______`, opts: [`Calcium Carbonate`, `Sodium Hydroxide`, `Calcium Hydroxide`, `Sodium Carbonate`], ans: 2, exp: `Ca(OH)2 is lime water.` },
+                        { q: `Which metal is protected by the layer of its own oxide?`, opts: [`Silver`, `Calcium`, `Iron`, `Aluminum`], ans: 3, exp: `Aluminum forms a protective Al2O3 layer.` },
+                        { q: `Spiti and Kinnaur are separated from Tibet by which mountain range?`, opts: [`Dhauladhar`, `Zanskar`, `Choordhar`, `Shiwalik`], ans: 1, exp: `Zanskar range acts as a border.` },
+                        { q: `Hangrang valley is located in which district of HP?`, opts: [`Kinnaur`, `Sirmour`, `Kullu`, `Lahaul-Spiti`], ans: 0, exp: `It is a high-altitude valley in Kinnaur.` },
+                        { q: `Which is the largest river in HP?`, opts: [`Satlej`, `Beas`, `Chenab`, `Yamuna`], ans: 2, exp: `Chenab is the largest by volume of water.` },
+                        { q: `By which name Himachal is introduced on the tourism map?`, opts: [`Shiv Bhoomi`, `Apple Land`, `Peach Bowl`, `Devbhoomi`], ans: 3, exp: `Known as Devbhoomi (Land of the Gods).` },
+                        { q: `Shitidhar is located in which district of HP?`, opts: [`Kullu`, `Mandi`, `Kangra`, `Chamba`], ans: 0, exp: `Mount Shitidhar is located in Kullu.` },
+                        { q: `First Deputy Speaker of HP Vidhan Sabha was ______`, opts: [`Krishan Chander`, `K.L. Mehta`, `N.C. Nandi`, `Pandit Jaiwant Ram`], ans: 0, exp: `Sh. Krishan Chander was the first.` },
+                        { q: `Who was the Chairman of joint meeting of Shimla Hill states rulers and Praja Mandal representatives held in January 1948 at Solan?`, opts: [`Durga Singh`, `Anand Chand`, `Vijay Singh`, `Garur Sen`], ans: 0, exp: `Raja Durga Singh chaired the meeting.` },
+                        { q: `When did a popular Ministry headed by Dr. Y.S. Parmar assume office in the Part 'C' state of HP?`, opts: [`24th March, 1948`, `24th March, 1950`, `24th March, 1952`, `24th March, 1954`], ans: 2, exp: `Assumed office in 1952.` },
+                        { q: `Which Sikh Guru is linked with the Paonta Sahib Gurudwara?`, opts: [`Guru Nanak`, `Guru Arjun Dev`, `Guru Tegh Bahadur`, `Guru Govind Singh`], ans: 3, exp: `Guru Gobind Singh Ji spent time there.` },
+                        { q: `Who is the creator of the Murals on the walls of the Mall, Shimla that depict the apple plucking skill of Himachali people?`, opts: [`S.N. Roerich`, `Shobha Singh`, `M.C. Saxena`, `None of these`], ans: 2, exp: `M.C. Saxena created those murals.` },
+                        { q: `Which Kangra ruler accepted the rule of Akbar?`, opts: [`Alam Chand`, `Dheer Chand`, `Anand Chand`, `Dharam Chand`], ans: 3, exp: `Dharam Chand accepted Akbar's suzerainty.` },
+                        { q: `On what date did the Indian Parliament pass the State of Himachal Pradesh Act?`, opts: [`1st November, 1966`, `18th December, 1970`, `26th November, 1969`, `15th April, 1954`], ans: 1, exp: `Passed on Dec 18, 1970.` },
+                        { q: `The Kayang, Bakyang and Banyangchu are the famous dances of ______`, opts: [`Mandi`, `Kullu`, `Lahaul-Spiti`, `Kinnaur`], ans: 3, exp: `These are traditional dances of Kinnaur.` },
+                        { q: `In which year the target of total electrification was achieved in H.P.?`, opts: [`1985`, `1988`, `1990`, `1995`], ans: 1, exp: `Achieved in the year 1988.` },
+                        { q: `Who received the first Pahari Gandhi Baba Kanshi Ram award in 1989?`, opts: [`Jai Dev Kiran`, `Om Prakash Saraswat`, `Ashwani Garg`, `Pt. Bhavani Dutt Shastri`], ans: 0, exp: `Jai Dev Kiran was the first recipient.` },
+                        { q: `European Organization for Nuclear Research (CERN) has recently suspended the observer status of which country?`, opts: [`Russia`, `Ukraine`, `Belarus`, `USA`], ans: 0, exp: `Suspended due to the geopolitical conflict in 2022.` },
+                        { q: `What is the theme of National Youth Parliament Festival 2022?`, opts: [`Be the voice of New India and find solutions`, `Voice of Youth matters`, `E-Governance and use of ICT`, `Participation of Women in Parliament`], ans: 0, exp: `The theme focused on being the voice of New India.` },
+                        { q: `What is 'PARAM Ganga', which was in news recently?`, opts: [`Covid Vaccine`, `Ganga Rejuvenation Scheme`, `Super Computer`, `Crypto Currency`], ans: 2, exp: `It is a Petascale Supercomputer at IIT Roorkee.` },
+                        { q: `Which country is the largest crude oil producer in the World, as on 2022?`, opts: [`Russia`, `USA`, `Saudi Arabia`, `Iran`], ans: 1, exp: `The USA became the largest producer.` },
+                        { q: `In a certain code SUBSTITUTION is written as ITSBUSNOITUT. How is DISTRIBUTION written in that code?`, opts: [`IRTSIDNOITUB`, `IRTSIDNOIBUT`, `IRTDISNOITUIB`, `IRTDISNOIUTB`], ans: 0, exp: `The word is split in half and reversed.` },
+                        { q: `In a row of 24 students, when Janki was shifted by 4 places towards left, she became 8th from the left end. What was her earlier position from the right end of the row?`, opts: [`12th`, `13th`, `14th`, `15th`], ans: 1, exp: `Original position was 12th from left. 24 - 12 + 1 = 13th from right.` },
+                        { q: `Pointing to a woman in a photograph a man says, "she is the only daughter of my father's mother-in-law". How is the woman related to the man?`, opts: [`daughter`, `mother`, `daughter-in-law`, `mother-in-law`], ans: 1, exp: `Father's mother-in-law = maternal grandmother. Her only daughter = mother.` }
+                    ]
+                },
+                {
+                    name: "General English",
+                    questions: [
+                        { q: `Antonym of the word 'Despondency' is ______`, opts: [`Humility`, `Pleasure`, `Cheerfulness`, `Excitement`], ans: 2, exp: `Despondency means depression/sadness. Opposite is Cheerfulness.` },
+                        { q: `One word Substitution for 'Constant effort to achieve something' is ______`, opts: [`Perseverance`, `Attempt`, `Enthusiasm`, `Vigour`], ans: 0, exp: `Perseverance refers to persistence in doing something despite difficulty.` },
+                        { q: `Ajit promised me that he would come ______ did not turn up.`, opts: [`and`, `though`, `but`, `still`], ans: 2, exp: `'But' connects two contrasting clauses.` },
+                        { q: `Meaning of the idiom 'to keep the ball rolling' is ______`, opts: [`To earn more & more`, `To create chaos`, `To change the sorry scheme`, `To keep the conversation going`], ans: 3, exp: `It means to maintain the momentum or continue an activity.` }
+                    ]
+                },
+                {
+                    name: "General Hindi",
+                    questions: [
+                        { q: `'सुरेश' का संधि विच्छेद है:`, opts: [`सुः + ईश`, `सुर + इश`, `सुर + ईश`, `सुः + इश`], ans: 2, exp: `सुर + ईश = सुरेश (गुण संधि)।` },
+                        { q: `'सुलक्षण' में समास है:`, opts: [`तत्पुरुष`, `द्वन्द्व`, `अव्ययीभाव`, `बहुव्रीहि`], ans: 3, exp: `सुलक्षण में बहुव्रीहि समास है (सुन्दर हैं लक्षण जिसके)।` },
+                        { q: `'चोरी' में प्रत्यय है:`, opts: [`च`, `चो`, `री`, `ई`], ans: 3, exp: `चोर + ई = चोरी। यहाँ 'ई' प्रत्यय है।` },
+                        { q: `'कौशल' का पर्यायवाची है:`, opts: [`पाटव`, `श्रवण`, `पयोधर`, `मृदु`], ans: 0, exp: `कौशल का अर्थ निपुणता होता है, जिसका पर्यायवाची 'पाटव' है।` }
+                    ]
+                }
+            ];
+        }
+
+        function getSampleQuestions() {
+            return [
+                {
+                    name: "Computer Science",
+                    questions: [
+                        { q: `Which of the following memory is non-volatile in nature?`, opts: [`RAM`, `ROM`, `Cache`, `Registers`], ans: 1, exp: `ROM (Read-Only Memory) retains its data even when the computer is turned off, making it non-volatile.` },
+                        { q: `Which layer of the OSI model is responsible for logical addressing (IP)?`, opts: [`Data Link Layer`, `Transport Layer`, `Network Layer`, `Application Layer`], ans: 2, exp: `The Network Layer is responsible for packet forwarding including routing through intermediate routers, using logical addressing like IP addresses.` }
+                    ]
+                }
+            ];
+        }
+
+        const allMockTests = [
+            { id: 1, title: "JOA IT 939 (Actual Paper)", desc: "Previous Year Paper - 24 April 2022 (All 200 Qs)", data: getJoa939Questions() },
+            { id: 2, title: "JOA IT Mock Test 2", desc: "Advanced Networking & SQL", data: getSampleQuestions() },
+            { id: 3, title: "JOA IT Mock Test 3", desc: "HP GK & Hardware Focus", data: getSampleQuestions() },
+            { id: 4, title: "JOA IT Mock Test 4", desc: "Software Engineering Basics", data: getSampleQuestions() },
+            { id: 5, title: "JOA IT Mock Test 5", desc: "Data Structures & Algorithms", data: getSampleQuestions() },
+            { id: 6, title: "JOA IT Mock Test 6", desc: "Cyber Security & Networks", data: getSampleQuestions() },
+            { id: 7, title: "JOA IT Mock Test 7", desc: "General English Mastery", data: getSampleQuestions() },
+            { id: 8, title: "JOA IT Mock Test 8", desc: "General Hindi & Grammar", data: getSampleQuestions() },
+            { id: 9, title: "JOA IT Mock Test 9", desc: "Web Development (HTML/CSS)", data: getSampleQuestions() },
+            { id: 10, title: "JOA IT Mock Test 10", desc: "Full Length Final Mock", data: getSampleQuestions() }
+        ];
+
+        let studentName = "";
+        let activeTestObj = null;
+        let sectionsData = []; 
+        let timerInterval;
+        let timeRemaining = 120 * 60; // 2 hours
+        let currentSection = 0; 
+        let currentQuestion = 0; 
+        let userAnswers = [];
+        let questionStatuses = [];
+
+        function loginToDashboard() {
+            const nameInput = document.getElementById('student-name-input').value.trim();
+            if (nameInput === "") {
+                document.getElementById('name-error').classList.remove('hidden');
+                return;
+            }
+            document.getElementById('name-error').classList.add('hidden');
+            studentName = nameInput;
+            
+            document.getElementById('dashboard-student-name').innerText = studentName;
+            document.getElementById('dashboard-avatar').innerText = studentName.charAt(0).toUpperCase();
+            document.getElementById('exam-student-name').innerText = studentName;
+            document.getElementById('exam-avatar').innerText = studentName.charAt(0).toUpperCase();
+            document.getElementById('result-student-name').innerText = studentName;
+            
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('dashboard-screen').classList.remove('hidden');
+            renderDashboard();
+        }
+
+        function renderDashboard() {
+            const container = document.getElementById('test-cards-container');
+            container.innerHTML = '';
+
+            allMockTests.forEach((test) => {
+                const card = document.createElement('div');
+                card.className = "test-card bg-white p-6 rounded-2xl shadow-sm border border-slate-200 cursor-pointer flex flex-col h-full";
+                card.onclick = () => selectTest(test.id);
+                
+                card.innerHTML = `
+                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-1">${test.title}</h3>
+                    <p class="text-sm text-slate-500 mb-6 flex-1">${test.desc}</p>
+                    <div class="mt-auto border-t pt-4 flex justify-between items-center text-sm font-semibold text-blue-600">
+                        <span>${test.data.reduce((a, s) => a + s.questions.length, 0)} Questions</span>
+                        <span>Start Test &rarr;</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function selectTest(testId) {
+            activeTestObj = allMockTests.find(t => t.id === testId);
+            sectionsData = JSON.parse(JSON.stringify(activeTestObj.data)); 
+            
+            document.getElementById('instruction-test-name').innerText = activeTestObj.title;
+            document.getElementById('header-test-name').innerText = activeTestObj.title;
+            document.getElementById('report-test-name').innerText = `${activeTestObj.title} - Crackit Bhai`;
+
+            const totalQs = activeTestObj.data.reduce((acc, section) => acc + section.questions.length, 0);
+            document.getElementById('instruction-total-qs').innerText = `${totalQs} Questions`;
+            document.getElementById('instruction-sections-list').innerText = activeTestObj.data.map(s => s.name).join(', ');
+
+            document.getElementById('dashboard-screen').classList.add('hidden');
+            document.getElementById('instructions-screen').classList.remove('hidden');
+        }
+
+        function backToDashboard() {
+            document.getElementById('instructions-screen').classList.add('hidden');
+            document.getElementById('dashboard-screen').classList.remove('hidden');
+        }
+
+        function startExam() {
+            document.getElementById('instructions-screen').classList.add('hidden');
+            document.getElementById('exam-screen').classList.remove('hidden');
+            
+            userAnswers = [];
+            questionStatuses = [];
+            for (let s = 0; s < sectionsData.length; s++) {
+                userAnswers[s] = new Array(sectionsData[s].questions.length).fill(null);
+                questionStatuses[s] = new Array(sectionsData[s].questions.length).fill(0);
+            }
+            
+            currentSection = 0;
+            currentQuestion = 0;
+            timeRemaining = 120 * 60; // 2 hour exam
+
+            startTimer();
+            initSectionTabs();
+            loadQuestion(currentSection, currentQuestion);
+        }
+
+        function startTimer() {
+            const timerDisplay = document.getElementById('timer');
+            clearInterval(timerInterval); 
+            
+            // Initial display update
+            let min = Math.floor(timeRemaining / 60);
+            let sec = timeRemaining % 60;
+            timerDisplay.innerText = `${min < 10 ? '0' : ''}${min}:${sec < 10 ? '0' : ''}${sec}`;
+
+            timerInterval = setInterval(() => {
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    timerDisplay.innerText = "00:00";
+                    submitExam();
+                    return;
+                }
+                
+                timeRemaining--;
+                let currentMin = Math.floor(timeRemaining / 60);
+                let currentSec = timeRemaining % 60;
+                timerDisplay.innerText = `${currentMin < 10 ? '0' : ''}${currentMin}:${currentSec < 10 ? '0' : ''}${currentSec}`;
+            }, 1000);
+        }
+
+        function initSectionTabs() {
+            const container = document.getElementById('section-tabs-container');
+            container.innerHTML = '';
+            
+            const tabNames = ["Computer", "GK", "English", "Hindi"];
+            
+            sectionsData.forEach((sec, idx) => {
+                const tab = document.createElement('div');
+                tab.className = `section-tab ${idx === currentSection ? 'active' : ''}`;
+                tab.innerText = tabNames[idx] || sec.name; 
+                tab.onclick = () => switchSection(idx);
+                container.appendChild(tab);
+            });
+        }
+
+        function switchSection(secIndex) {
+            currentSection = secIndex;
+            currentQuestion = 0; 
+            initSectionTabs();
+            loadQuestion(currentSection, currentQuestion);
+        }
+
+        function renderPalette() {
+            const palette = document.getElementById('question-palette');
+            palette.innerHTML = '';
+            document.getElementById('palette-section-name').innerText = sectionsData[currentSection].name;
+            
+            let globalStartNum = 1;
+            for(let i=0; i<currentSection; i++){
+                globalStartNum += sectionsData[i].questions.length;
+            }
+
+            sectionsData[currentSection].questions.forEach((_, idx) => {
+                const btn = document.createElement('div');
+                const globalNum = globalStartNum + idx;
+                btn.innerText = globalNum;
+                btn.className = 'palette-btn text-sm shadow-sm ';
+                
+                const status = questionStatuses[currentSection][idx];
+                if (status === 0) btn.classList.add('status-not-visited');
+                else if (status === 1) btn.classList.add('status-answered');
+                else if (status === 2) btn.classList.add('status-not-answered');
+                else if (status === 3) btn.classList.add('status-marked');
+                
+                if (idx === currentQuestion) {
+                    btn.style.border = "2px solid #1e40af";
+                    btn.style.transform = "scale(1.1)";
+                    btn.style.zIndex = "10";
+                }
+
+                btn.onclick = () => jumpToQuestion(idx);
+                palette.appendChild(btn);
+            });
+        }
+
+        function loadQuestion(secIdx, qIdx) {
+            currentSection = secIdx;
+            currentQuestion = qIdx;
+            
+            if (questionStatuses[currentSection][currentQuestion] === 0) {
+                questionStatuses[currentSection][currentQuestion] = 2; 
+            }
+
+            renderPalette();
+            
+            const qData = sectionsData[currentSection].questions[currentQuestion];
+            
+            let globalNum = 1;
+            for(let i=0; i<currentSection; i++){
+                globalNum += sectionsData[i].questions.length;
+            }
+            globalNum += currentQuestion;
+            
+            document.getElementById('question-number-display').innerText = globalNum;
+            document.getElementById('question-text').innerText = qData.q;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            const savedAns = userAnswers[currentSection][currentQuestion];
+
+            qData.opts.forEach((opt, idx) => {
+                const optId = `opt-${idx}`;
+                const checked = (savedAns === idx) ? 'checked' : '';
+                
+                const html = `
+                    <div>
+                        <input type="radio" name="options" id="${optId}" value="${idx}" class="hidden" ${checked} onchange="selectOption(${idx})">
+                        <label for="${optId}" class="option-label group">
+                            <span class="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 border-slate-300 flex items-center justify-center mr-4 group-hover:border-blue-500 shrink-0 ${checked ? 'border-blue-600 bg-blue-50' : ''}">
+                                ${checked ? '<div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-blue-600 rounded-full"></div>' : ''}
+                            </span>
+                            <span class="text-slate-700 font-medium text-sm sm:text-base">${escapeHtml(opt)}</span>
+                        </label>
+                    </div>
+                `;
+                optionsContainer.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+        function selectOption(idx) {
+            userAnswers[currentSection][currentQuestion] = idx;
+            loadQuestion(currentSection, currentQuestion); 
+        }
+        
+        function jumpToQuestion(qIdx) { loadQuestion(currentSection, qIdx); }
+        
+        function saveAndNext() {
+            if (userAnswers[currentSection][currentQuestion] !== null) {
+                questionStatuses[currentSection][currentQuestion] = 1; 
+            } else {
+                questionStatuses[currentSection][currentQuestion] = 2; 
+            }
+            goToNext();
+        }
+        
+        function markForReview() { questionStatuses[currentSection][currentQuestion] = 3; goToNext(); }
+        
+        function clearResponse() {
+            userAnswers[currentSection][currentQuestion] = null;
+            questionStatuses[currentSection][currentQuestion] = 2; 
+            loadQuestion(currentSection, currentQuestion); 
+        }
+
+        function goToNext() {
+            if (currentQuestion < sectionsData[currentSection].questions.length - 1) {
+                loadQuestion(currentSection, currentQuestion + 1);
+            } else if (currentSection < sectionsData.length - 1) {
+                switchSection(currentSection + 1); 
+            } else {
+                renderPalette();
+            }
+        }
+
+        function submitExam() {
+            clearInterval(timerInterval);
+            document.getElementById('exam-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            calculateResults();
+        }
+
+        function escapeHtml(unsafeText) {
+            if (!unsafeText) return "";
+            return String(unsafeText)
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+        }
+
+        function calculateResults() {
+            let totalAttempted = 0, totalCorrect = 0, totalIncorrect = 0;
+            let sectionScores = []; 
+            const solutionsContainer = document.getElementById('solutions-container');
+            solutionsContainer.innerHTML = '';
+            let globalQNum = 1;
+            
+            sectionsData.forEach((section, secIdx) => {
+                let secCorrect = 0, secIncorrect = 0;
+                const secSolutionHeader = document.createElement('div');
+                secSolutionHeader.className = "bg-indigo-100 text-indigo-900 font-bold py-1.5 px-3 rounded mt-4 mb-2 border-l-4 border-indigo-600 uppercase tracking-wide text-xs";
+                secSolutionHeader.innerText = section.name;
+                solutionsContainer.appendChild(secSolutionHeader);
+                
+                section.questions.forEach((qData, qIdx) => {
+                    const ans = userAnswers[secIdx][qIdx];
+                    if (ans !== null) {
+                        totalAttempted++;
+                        if (ans === qData.ans) { secCorrect++; totalCorrect++; }
+                        else { secIncorrect++; totalIncorrect++; }
+                    }
+
+                    let statusHtml = '';
+                    let userChoiceText = ans !== null ? qData.opts[ans] : "Not Attempted";
+                    let correctChoiceText = qData.opts[qData.ans];
+                    let cardClasses = "bg-white border-slate-200";
+
+                    if (ans === null) {
+                        statusHtml = `<span class="text-slate-600 font-bold bg-slate-200 px-2 py-0.5 rounded text-[9px] sm:text-[10px] tracking-wider uppercase whitespace-nowrap">Skipped</span>`;
+                    } else if (ans === qData.ans) {
+                        statusHtml = `<span class="text-green-700 font-bold bg-green-200 px-2 py-0.5 rounded text-[9px] sm:text-[10px] tracking-wider uppercase border border-green-300 whitespace-nowrap">Correct</span>`;
+                        cardClasses = "bg-green-50/30 border-green-200";
+                    } else {
+                        statusHtml = `<span class="text-red-700 font-bold bg-red-200 px-2 py-0.5 rounded text-[9px] sm:text-[10px] tracking-wider uppercase border border-red-300 whitespace-nowrap">Incorrect</span>`;
+                        cardClasses = "bg-red-50/30 border-red-200";
+                    }
+
+                    const solCard = document.createElement('div');
+                    solCard.className = `question-review-card p-2 sm:p-3 rounded-lg border ${cardClasses} shadow-sm relative mb-2`;
+                    
+                    solCard.innerHTML = `
+                        <div class="flex justify-between items-start mb-1.5 gap-2">
+                            <div class="font-bold text-slate-800 text-[11px] sm:text-xs leading-snug pr-14">
+                                <span class="text-indigo-600 mr-1">Q${globalQNum}.</span> ${escapeHtml(qData.q)}
+                            </div>
+                            <div class="shrink-0 self-start absolute top-2 right-2">${statusHtml}</div>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 text-[10px] sm:text-[11px] mb-1.5">
+                            <div class="px-1.5 py-0.5 rounded bg-slate-50 border border-slate-200 flex items-center">
+                                <span class="text-slate-500 font-bold mr-1">Your Ans:</span>
+                                <span class="${ans === qData.ans ? 'text-green-700 font-bold' : (ans === null ? 'text-slate-500 italic' : 'text-red-600 font-bold')} truncate max-w-[120px] sm:max-w-[200px]" title="${escapeHtml(userChoiceText)}">${escapeHtml(userChoiceText)}</span>
+                            </div>
+                            <div class="px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-200 flex items-center">
+                                <span class="text-emerald-800 font-bold mr-1">Correct:</span>
+                                <span class="text-emerald-700 font-bold truncate max-w-[120px] sm:max-w-[200px]" title="${escapeHtml(correctChoiceText)}">${escapeHtml(correctChoiceText)}</span>
+                            </div>
+                        </div>
+                        <div class="text-[10px] sm:text-[11px] text-slate-700 bg-blue-50/40 p-1.5 rounded border border-blue-100 flex flex-col gap-1">
+                            <div class="leading-snug">
+                                <span class="font-bold text-blue-800 uppercase mr-1 text-[9px]">Exp:</span>
+                                ${escapeHtml(qData.exp)}
+                            </div>
+                            <button onclick="askAITutor(this)" 
+                                data-id="ai-response-${globalQNum}" 
+                                data-q="${escapeHtml(qData.q)}" 
+                                data-c="${escapeHtml(correctChoiceText)}" 
+                                data-u="${escapeHtml(userChoiceText)}" 
+                                class="no-print self-start text-[9px] sm:text-[10px] font-bold text-purple-700 bg-purple-100 hover:bg-purple-200 px-1.5 py-0.5 rounded flex items-center gap-1 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" /></svg>
+                                Ask AI
+                            </button>
+                            <div id="ai-response-${globalQNum}" class="hidden mt-1 p-1.5 bg-white border border-purple-200 rounded text-slate-700 text-[10px]"></div>
+                        </div>
+                    `;
+                    solutionsContainer.appendChild(solCard);
+                    globalQNum++;
+                });
+                sectionScores.push({ name: section.name, correct: secCorrect, total: section.questions.length });
+            });
+
+            // Standard scoring for JOA IT: 0.5 per correct, let's stick to 1 for generic mock display, or 0.5 if strictly requested.
+            // Using +1 and -0.25 as shown in the Instructions HTML.
+            let finalScore = (totalCorrect * 1) - (totalIncorrect * 0.25);
+            document.getElementById('res-total-score').innerText = finalScore.toFixed(2);
+            document.getElementById('res-correct').innerText = totalCorrect;
+            document.getElementById('res-incorrect').innerText = totalIncorrect;
+            document.getElementById('res-attempted').innerText = totalAttempted;
+            
+            generateAIInsights(finalScore, sectionScores);
+        }
+
+        function returnToDashboard() {
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('dashboard-screen').classList.remove('hidden');
+            document.getElementById('ai-insights-container').classList.add('hidden');
+        }
+
+        function downloadPDF() {
+            const btn = document.getElementById('pdf-btn');
+            const originalBtnHtml = btn.innerHTML;
+            btn.innerHTML = `Generating PDF...`;
+            btn.disabled = true;
+
+            const noPrintElements = document.querySelectorAll('.no-print');
+            noPrintElements.forEach(el => el.style.display = 'none');
+
+            const element = document.getElementById('printable-report');
+            
+            const opt = {
+                margin:       [0.3, 0.3, 0.3, 0.3],
+                filename:     `CrackitBhai_${activeTestObj.title.replace(/\s+/g, '_')}_${studentName.replace(/\s+/g, '_')}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['css', 'avoid-all', 'legacy'] }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                btn.innerHTML = originalBtnHtml;
+                btn.disabled = false;
+                noPrintElements.forEach(el => el.style.display = '');
+            }).catch(err => {
+                console.error("PDF Generation failed:", err);
+                btn.innerHTML = originalBtnHtml;
+                btn.disabled = false;
+                noPrintElements.forEach(el => el.style.display = '');
+            });
+        }
+
+        const GEMINI_API_KEY = ""; // Optional API Key
+        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`;
+
+        async function fetchWithRetry(url, options, maxRetries = 3) {
+            let delay = 1000;
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    if(!GEMINI_API_KEY) throw new Error("No API Key");
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        if (response.status === 429) throw new Error("Rate limited");
+                        throw new Error(`API Request Failed with status ${response.status}`);
+                    }
+                    return response;
+                } catch (error) {
+                    if (i === maxRetries - 1) throw error;
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        async function generateAIInsights(totalScore, sectionScores) {
+            const container = document.getElementById('ai-insights-container');
+            const contentDiv = document.getElementById('ai-insights-content');
+            
+            if(!GEMINI_API_KEY) return; // Skip if no API key
+            
+            container.classList.remove('hidden');
+            let breakdownStr = sectionScores.map(s => `${s.name}: ${s.correct}/${s.total}`).join(', ');
+            const totalExamQs = sectionsData.reduce((acc, sec) => acc + sec.questions.length, 0);
+
+            const prompt = `Act as an expert exam counselor for a student taking the ${activeTestObj.title} mock exam.
+            Student Name: ${studentName || "The student"}
+            Total Score: ${totalScore.toFixed(2)} out of ${totalExamQs}.
+            Sectional breakdown: ${breakdownStr}.
+            Provide a concise, highly encouraging 1-paragraph summary. 
+            Highlight their strongest area and identify their weakest area.
+            Provide exactly 2 bullet points with actionable study tips specifically related to their weakest area.
+            Format nicely in HTML (use <b> for bolding, <p> for paragraphs, <ul><li> for lists). Keep the tone friendly. Do NOT include markdown blocks.`;
+
+            const payload = { contents: [{ parts: [{ text: prompt }] }] };
+
+            try {
+                const response = await fetchWithRetry(GEMINI_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                const aiText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (aiText) contentDiv.innerHTML = aiText;
+                else contentDiv.innerHTML = "<p class='text-red-500'>Could not generate insights at this time.</p>";
+            } catch (error) {
+                contentDiv.innerHTML = "<p class='text-red-500'>AI Insights are currently unavailable.</p>";
+            }
+        }
+
+        async function askAITutor(btnElement) {
+            const containerId = btnElement.getAttribute('data-id');
+            const container = document.getElementById(containerId);
+
+            if(!GEMINI_API_KEY) {
+                container.classList.remove('hidden');
+                container.innerHTML = "<span class='text-red-500 font-bold text-[10px]'>Please add your Gemini API Key in the code to use the AI Tutor feature.</span>";
+                return;
+            }
+
+            const question = btnElement.getAttribute('data-q');
+            const correctAns = btnElement.getAttribute('data-c');
+            const userAns = btnElement.getAttribute('data-u');
+            
+            if (!container.classList.contains('hidden') && !container.innerHTML.includes('animate-pulse')) {
+                container.classList.add('hidden');
+                return;
+            }
+            
+            container.classList.remove('hidden');
+            container.innerHTML = `<div class="flex items-center gap-2 text-purple-600 font-semibold animate-pulse">Tutor is thinking...</div>`;
+
+            let specificContext = "";
+            if (userAns === "Not Attempted") {
+                specificContext = `The student skipped this question. Explain in simple terms why the correct answer is right.`;
+            } else if (userAns === correctAns) {
+                specificContext = `The student answered correctly. Give a fun fact or a deeper 1-sentence insight about this topic.`;
+            } else {
+                specificContext = `The student selected "${userAns}". Explain why "${correctAns}" is the correct answer, and politely correct the misconception about why "${userAns}" is incorrect.`;
+            }
+
+            const prompt = `Act as a friendly, expert tutor. 
+            Question: "${question}"
+            Correct Answer: "${correctAns}"
+            ${specificContext}
+            Keep the response very concise (2-3 short sentences max). Use simple English. Format with light HTML (like <b>) if needed, no markdown blocks.`;
+
+            const payload = { contents: [{ parts: [{ text: prompt }] }] };
+
+            try {
+                const response = await fetchWithRetry(GEMINI_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                const aiText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (aiText) container.innerHTML = `<div class="border-l-4 border-purple-400 pl-3 italic">${aiText}</div>`;
+                else container.innerHTML = "<span class='text-red-500'>Tutor is unavailable.</span>";
+            } catch (error) {
+                container.innerHTML = "<span class='text-red-500'>Network error. Please try again.</span>";
+            }
+        }
+    </script>
+</body>
+</html>
